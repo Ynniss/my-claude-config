@@ -5,7 +5,7 @@ Personal Claude Code configuration for syncing across machines.
 ## Setup
 
 ```bash
-git clone git@github.com:Ynniss/claude-config.git ~/.claude
+git clone git@github.com:Ynniss/my-claude-config.git ~/.claude
 ```
 
 ## Contents
