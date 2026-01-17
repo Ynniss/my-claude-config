@@ -1,0 +1,25 @@
+{
+  "enabledPlugins": {
+    "ralph-wiggum@claude-plugins-official": true,
+    "n8n-mcp-skills@n8n-mcp-skills": true
+  },
+  "alwaysThinkingEnabled": true,
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(> /dev:*)",
+      "Bash(dd:*)",
+      "Bash(mkfs:*)",
+      "Bash(chmod 777:*)",
+      "Read(~/.aws/**)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.ssh/*.pem)",
+      "Read(~/.gnupg/**)",
+      "Read(**/*.key)",
+      "Edit(.env)",
+      "Edit(.env.local)",
+      "Edit(.env.production)"
+    ]
+  }
+}
