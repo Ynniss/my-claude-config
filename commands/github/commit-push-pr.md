@@ -1,16 +1,24 @@
 ---
-description: Finish work - split into atomic commits, create PR, cleanup if needed. Trigger phrases - "I'm done", "wrap it up", "create the PR", "let's finish", "ship it"
+description: Split into atomic commits, push, and create PR
 allowed-tools: Bash(gh:*), Bash(git:*), Bash(rm:*), Bash(pwd:*), Bash(rmdir:*), AskUserQuestion
 ---
 
 # Finish Work and Create PR
 
-## Step 1: Review Changes
+## Git Conventions (GitHub Flow)
+- **PRs always target `main`** - no long-lived feature branches
+- **Branch naming**: `<type>/<issue-number>-<slug>` (types: `feature/`, `fix/`, `docs/`, `refactor/`)
+- **Commits**: Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`). No Co-Authored-By trailers.
+- **PR body**: Always include `Resolves #<issue-number>`. No "Generated with Claude Code" footer.
+
+## Step 1: Review Changes & Check for Existing PR
 ```bash
 git status
 git diff --stat
+git branch --show-current
+gh pr list --head $(git branch --show-current) --json number,url --jq '.[0]'
 ```
-Show summary of all changes to the user.
+Show summary of changes. If a PR already exists, note that we'll just commit and push (skip PR creation).
 
 ## Step 2: Extract Issue Number
 Get issue number from branch name (format: `<type>/<issue-number>-<slug>`):
@@ -45,32 +53,36 @@ For each logical group:
 ```bash
 git commit -m "$(cat <<'EOF'
 <type>(scope): description
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
 
-Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`
-
-## Step 5: Push and Create PR
+## Step 5: Push (and Create PR if needed)
 ```bash
 git push -u origin <branch>
 ```
 
-Create PR with:
-```bash
-gh pr create --base develop --title "<title>" --body "$(cat <<'EOF'
-## Summary
-- <bullet points>
+**If PR already exists (detected in Step 1):** Stop here. Show the existing PR URL and confirm the push was successful.
 
-Closes #<issue-number>
+**If no PR exists:** Create PR with:
+```bash
+gh pr create --base main --title "<title>" --body "$(cat <<'EOF'
+## Summary
+<Brief description of what this PR does>
+
+## Changes
+- <bullet points of specific changes>
+
+## Why
+<Context: why is this change needed? Link to discussion/issue if relevant>
+
+## Screenshots
+<If UI changes, add before/after screenshots. Remove section if not applicable>
+
+Resolves #<issue-number>
 
 ## Test Plan
 - [ ] <verification steps>
-
----
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```
@@ -93,6 +105,5 @@ End with:
 - Worktree cleanup instructions (only if applicable)
 
 ## Edge Cases
-- **No changes:** Inform user "Nothing to commit" and check if PR already exists
-- **PR already exists:** Show PR URL and ask if user wants to update it
+- **No changes:** Inform user "Nothing to commit" and show existing PR URL if one exists
 - **User rejects split:** Ask for their preferred approach
