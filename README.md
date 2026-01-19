@@ -86,6 +86,31 @@ Creates a new dev slot by cloning the current repo into a sibling folder.
 3. Clones the repo into the new slot
 4. Checks out the desired branch (renames slot to branch name if not `main`)
 
+## MCP Servers & Plugins
+
+### Context7 (MCP Server)
+
+Provides real-time documentation lookup for any library or framework. Instead of relying on training data, Claude can fetch current docs and code examples.
+
+**Usage:** Claude automatically uses this when you ask about library APIs, syntax, or best practices.
+
+### n8n MCP Skills
+
+Specialized knowledge for building [n8n](https://n8n.io) workflows:
+- Node configuration guidance
+- JavaScript/Python code node patterns
+- Workflow architectural patterns
+- Expression syntax validation
+- Validation error interpretation
+
+### DeepL (MCP Server)
+
+Translation and text rephrasing capabilities:
+- Translate text between languages
+- Translate documents (PDF, DOCX, etc.)
+- Rephrase text with different styles/tones
+- Glossary support for consistent terminology
+
 ## Contents
 
 | File | Purpose |
