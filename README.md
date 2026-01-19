@@ -111,19 +111,16 @@ Translation and text rephrasing capabilities:
 - Rephrase text with different styles/tones
 - Glossary support for consistent terminology
 
-## Contents
+## Safety Permissions
 
-| File | Purpose |
-|------|---------|
-| `CLAUDE.md` | Global instructions (communication style, git workflow) |
-| `settings.json` | Global settings (permissions, plugins) |
-| `commands/` | Custom slash commands |
+The `settings.json` blocks dangerous operations:
 
-## Permissions
+| Category | Blocked Patterns |
+|----------|------------------|
+| Destructive commands | `rm -rf /`, `rm -rf ~`, `dd`, `mkfs`, `chmod 777` |
+| Credential access | `~/.aws/**`, `~/.ssh/id_*`, `~/.ssh/*.pem`, `~/.gnupg/**`, `**/*.key` |
+| Env file editing | `.env`, `.env.local`, `.env.production` |
 
-The `settings.json` includes safety rules that block dangerous operations:
+## Feature Flags
 
-- Catastrophic deletions (`rm -rf /`, `rm -rf ~`)
-- Disk operations (`dd`, `mkfs`)
-- Reading system credentials (`~/.aws`, `~/.ssh`, `~/.gnupg`)
-- Editing production env files (`.env`, `.env.production`)
+- **`alwaysThinkingEnabled`**: Claude shows its reasoning process (extended thinking) for all responses
