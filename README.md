@@ -32,6 +32,60 @@ git clone git@github.com:Ynniss/my-claude-config.git ~/.claude
 └── README.md
 ```
 
+## Commands
+
+### `/github:push`
+
+Splits staged changes into atomic, conventional commits and creates a pull request.
+
+**What it does:**
+1. Reviews all staged/unstaged changes
+2. Proposes a commit strategy (one commit per logical unit)
+3. Asks for approval before committing
+4. Creates commits using conventional commit format (`feat:`, `fix:`, `refactor:`, etc.)
+5. Pushes to remote and creates a PR targeting `main` (or updates existing PR)
+6. Handles worktree cleanup if applicable
+
+**Conventions enforced:**
+- Branch naming: `<type>/<issue-number>-<slug>` (e.g., `feature/123-add-auth`)
+- PR body includes `Resolves #<issue-number>`
+- No Co-Authored-By trailers or "Generated with Claude Code" footers
+
+### `/github:release`
+
+Creates a GitHub release with an auto-generated changelog from merged PRs.
+
+**What it does:**
+1. Fetches the latest release tag
+2. Collects all PRs merged since that release
+3. Asks for the new version number
+4. Groups PRs into categories (Features, Fixes, Improvements)
+5. Presents draft release notes for approval
+6. Creates and pushes the git tag
+7. Creates the GitHub release
+
+### `/github:checkout`
+
+Switches an existing dev slot (worktree) to a different remote branch.
+
+**What it does:**
+1. Lists available slots in the parent directory
+2. Lists remote branches
+3. Renames the slot folder to match the branch name
+4. Checks out the selected branch
+
+**Dev slot convention:** Worktrees are organized as sibling folders (`a/`, `b/`, `c/` or branch-named folders) allowing parallel work on multiple branches.
+
+### `/github:clone`
+
+Creates a new dev slot by cloning the current repo into a sibling folder.
+
+**What it does:**
+1. Detects the repo URL and base path
+2. Names the new slot with the next letter (`a` → `b` → `c`)
+3. Clones the repo into the new slot
+4. Checks out the desired branch (renames slot to branch name if not `main`)
+
 ## Contents
 
 | File | Purpose |
