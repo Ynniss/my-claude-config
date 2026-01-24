@@ -1,15 +1,6 @@
 # Claude Code Config
 
-Personal configuration for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), Anthropic's agentic CLI tool. This repository is designed to be cloned directly into `~/.claude` for seamless syncing across machines.
-
-## What This Does
-
-This configuration extends Claude Code with:
-
-- **Custom slash commands** for GitHub workflows (commits, PRs, releases, worktree management)
-- **Safety guardrails** to prevent destructive operations and credential exposure
-- **MCP integrations** for enhanced documentation lookup and workflow automation
-- **Global behavior rules** for consistent communication and git practices
+Personal configuration for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), Anthropic's agentic CLI tool. Clone directly into `~/.claude` for seamless syncing across machines.
 
 ## Setup
 
@@ -23,37 +14,48 @@ git clone git@github.com:Ynniss/my-claude-config.git ~/.claude
 ~/.claude/
 ├── CLAUDE.md           # Global instructions loaded in every session
 ├── settings.json       # Permissions, plugins, and feature flags
-├── commands/
-│   └── github/
-│       ├── push.md     # /github:push - Commit, push, and create PRs
-│       ├── release.md  # /github:release - Create releases with changelogs
-│       ├── checkout.md # /github:checkout - Switch worktree slots to branches
-│       └── clone.md    # /github:clone - Clone repo into new worktree slot
+├── skills/
+│   ├── checkout/       # /checkout - Open worktree for an issue
+│   ├── push/           # /push - Split into atomic commits, push, and create PR
+│   └── release/        # /release - Create git tag and GitHub release
 └── README.md
 ```
 
-## Commands
+## Skills
 
-### `/github:push`
+### `/checkout`
 
-Splits staged changes into atomic, conventional commits and creates a pull request.
+Opens a git worktree for an issue, enabling parallel work on multiple branches.
+
+**What it does:**
+1. Lists existing worktrees and open issues
+2. Auto-cleans stale worktrees (merged PRs)
+3. Creates or switches to a worktree for the selected issue
+4. Runs project setup commands (e.g., `npm install`)
+
+**Worktree convention:** Worktrees are sibling folders named after branches (e.g., `feature-23-auth/`).
+
+### `/push`
+
+Splits changes into atomic commits, rebases onto main, and creates a pull request.
 
 **What it does:**
 1. Reviews all staged/unstaged changes
 2. Proposes a commit strategy (one commit per logical unit)
 3. Asks for approval before committing
-4. Creates commits using conventional commit format (`feat:`, `fix:`, `refactor:`, etc.)
-5. Pushes to remote and creates a PR targeting `main` (or updates existing PR)
-6. Handles worktree cleanup if applicable
+4. Creates commits using conventional format (`feat:`, `fix:`, `refactor:`, etc.)
+5. Rebases onto `origin/main` to ensure branch is up-to-date
+6. Pushes and creates PR (or updates existing)
+7. Handles worktree cleanup if applicable
 
 **Conventions enforced:**
-- Branch naming: `<type>/<issue-number>-<slug>` (e.g., `feature/123-add-auth`)
+- Branch naming: `<type>/<issue-number>-<slug>`
 - PR body includes `Resolves #<issue-number>`
-- No Co-Authored-By trailers or "Generated with Claude Code" footers
+- No Co-Authored-By trailers
 
-### `/github:release`
+### `/release`
 
-Creates a GitHub release with an auto-generated changelog from merged PRs.
+Creates a GitHub release with auto-generated changelog from merged PRs.
 
 **What it does:**
 1. Fetches the latest release tag
@@ -64,63 +66,41 @@ Creates a GitHub release with an auto-generated changelog from merged PRs.
 6. Creates and pushes the git tag
 7. Creates the GitHub release
 
-### `/github:checkout`
+## Global Instructions (CLAUDE.md)
 
-Switches an existing dev slot (worktree) to a different remote branch.
+| Section | Purpose |
+|---------|---------|
+| **Communication** | Ask before adding dependencies, clarify before implementing |
+| **Shortcuts** | "checkout", "push", "release" invoke respective skills |
+| **Model Aliases** | Use `haiku`, `sonnet`, `opus` (not full model IDs) |
+| **Tool Preferences** | Context7 for library docs, WebSearch for general queries |
+| **GitHub Issues** | Interview before drafting, show roadmap after creating |
 
-**What it does:**
-1. Lists available slots in the parent directory
-2. Lists remote branches
-3. Renames the slot folder to match the branch name
-4. Checks out the selected branch
+## MCP Servers
 
-**Dev slot convention:** Worktrees are organized as sibling folders (`a/`, `b/`, `c/` or branch-named folders) allowing parallel work on multiple branches.
+### Context7
 
-### `/github:clone`
+Real-time documentation lookup for any library or framework. Claude fetches current docs instead of relying on training data.
 
-Creates a new dev slot by cloning the current repo into a sibling folder.
+### DeepL
 
-**What it does:**
-1. Detects the repo URL and base path
-2. Names the new slot with the next letter (`a` → `b` → `c`)
-3. Clones the repo into the new slot
-4. Checks out the desired branch (renames slot to branch name if not `main`)
-
-## MCP Servers & Plugins
-
-### Context7 (MCP Server)
-
-Provides real-time documentation lookup for any library or framework. Instead of relying on training data, Claude can fetch current docs and code examples.
-
-**Usage:** Claude automatically uses this when you ask about library APIs, syntax, or best practices.
+Translation and text rephrasing:
+- Translate text and documents
+- Rephrase with different styles/tones
+- Glossary support
 
 ### n8n MCP Skills
 
-Specialized knowledge for building [n8n](https://n8n.io) workflows:
-- Node configuration guidance
-- JavaScript/Python code node patterns
-- Workflow architectural patterns
-- Expression syntax validation
-- Validation error interpretation
-
-### DeepL (MCP Server)
-
-Translation and text rephrasing capabilities:
-- Translate text between languages
-- Translate documents (PDF, DOCX, etc.)
-- Rephrase text with different styles/tones
-- Glossary support for consistent terminology
+Specialized knowledge for [n8n](https://n8n.io) workflows:
+- Node configuration, code patterns, workflow architecture
+- Expression syntax validation, error interpretation
 
 ## Safety Permissions
 
-The `settings.json` blocks dangerous operations:
+Blocked in `settings.json`:
 
-| Category | Blocked Patterns |
-|----------|------------------|
-| Destructive commands | `rm -rf /`, `rm -rf ~`, `dd`, `mkfs`, `chmod 777` |
-| Credential access | `~/.aws/**`, `~/.ssh/id_*`, `~/.ssh/*.pem`, `~/.gnupg/**`, `**/*.key` |
+| Category | Examples |
+|----------|----------|
+| Destructive commands | `rm -rf /`, `dd`, `mkfs`, `chmod 777` |
+| Credential access | `~/.aws/**`, `~/.ssh/id_*`, `~/.gnupg/**` |
 | Env file editing | `.env`, `.env.local`, `.env.production` |
-
-## Feature Flags
-
-- **`alwaysThinkingEnabled`**: Claude shows its reasoning process (extended thinking) for all responses
