@@ -3,6 +3,7 @@ name: push
 description: Split into atomic commits, push, and create PR
 allowed-tools: Bash(gh:*), Bash(git:*), Bash(rm:*), Bash(pwd:*), Bash(rmdir:*), AskUserQuestion
 model: sonnet
+effort: low
 ---
 
 # Finish Work and Create PR
