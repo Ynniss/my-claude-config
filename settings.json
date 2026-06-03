@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(git -C ~/.claude:*)"
+    ],
     "deny": [
       "Bash(rm -rf /:*)",
       "Bash(rm -rf ~:*)",
