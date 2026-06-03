@@ -13,6 +13,10 @@ model: sonnet
 - **Commits**: Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`). No Co-Authored-By trailers.
 - **PR body**: Always include `Resolves #<issue-number>`. No "Generated with Claude Code" footer.
 
+## IMPORTANT: Direct push on main
+- **If already on `main`**: commit and push directly to `main`. Do NOT create a feature branch or PR. Just commit, push, done.
+- **If on a feature branch**: follow the full PR flow below.
+
 ## Step 1: Review Changes & Check for Existing PR
 ```bash
 git status
@@ -20,9 +24,13 @@ git diff --stat
 git branch --show-current
 gh pr list --head $(git branch --show-current) --json number,url --jq '.[0]'
 ```
-Show summary of changes. If a PR already exists, note that we'll just commit and push (skip PR creation).
+Show summary of changes.
 
-## Step 2: Extract Issue Number
+**If on `main`:** Skip Steps 2, 5, 6 PR creation, and 7. Just commit (Steps 3-4), push to main, and done.
+
+**If on a feature branch and a PR already exists:** Note that we'll just commit and push (skip PR creation).
+
+## Step 2: Extract Issue Number (feature branches only)
 Get issue number from branch name (format: `<type>/<issue-number>-<slug>`):
 ```bash
 git branch --show-current | grep -oE '[0-9]+' | head -1
@@ -76,6 +84,8 @@ git rebase origin/main
 git push -u origin <branch>
 ```
 
+**If on `main`:** Just `git push origin main` and skip PR creation. Done.
+
 **If push is rejected (remote has changes):** Force push with lease (safe force push):
 ```bash
 git push --force-with-lease origin <branch>
@@ -83,7 +93,7 @@ git push --force-with-lease origin <branch>
 
 **If PR already exists (detected in Step 1):** Stop here. Show the existing PR URL and confirm the push was successful.
 
-**If no PR exists:** Create PR with:
+**If no PR exists (feature branch only):** Create PR with:
 ```bash
 gh pr create --base main --title "<title>" --body "$(cat <<'EOF'
 ## Summary
