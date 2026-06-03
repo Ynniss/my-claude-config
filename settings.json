@@ -1,9 +1,4 @@
 {
-  "enabledPlugins": {
-    "ralph-wiggum@claude-plugins-official": true,
-    "n8n-mcp-skills@n8n-mcp-skills": true
-  },
-  "alwaysThinkingEnabled": true,
   "permissions": {
     "deny": [
       "Bash(rm -rf /:*)",
@@ -21,5 +16,28 @@
       "Edit(.env.local)",
       "Edit(.env.production)"
     ]
-  }
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "sh ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "ralph-wiggum@claude-plugins-official": true,
+    "n8n-mcp-skills@n8n-mcp-skills": true,
+    "warp@claude-code-warp": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "autoCompactEnabled": false,
+  "model": "opusplan"
 }
