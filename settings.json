@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "Bash(git -C ~/.claude:*)"
     ],
@@ -19,7 +18,8 @@
       "Edit(.env)",
       "Edit(.env.local)",
       "Edit(.env.production)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "statusLine": {
     "type": "command",
@@ -39,9 +39,8 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
-  "autoCompactEnabled": false,
-  "model": "opusplan"
+  "autoCompactEnabled": false
 }
