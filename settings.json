@@ -21,6 +21,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "sh ~/.claude/statusline-command.sh"
@@ -39,7 +40,7 @@
     }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": false
