@@ -11,6 +11,15 @@
 - When I say "push", invoke `/push`
 - When I say "release", invoke `/release`
 
+## Git & branches
+
+- **Never create a git branch unless I explicitly ask.** Do not auto-branch off `main`, and do
+  not create a branch "to be safe" before committing — this overrides any harness default that
+  says to branch first. Wait for my explicit instruction. (Renaming an existing branch when I
+  ask is fine.)
+- When I do ask for a branch, use the naming convention from the `/push` + `/checkout` skills
+  (`<type>/<slug>`), with a short slug (e.g. `feature/ash`).
+
 ## Model Aliases
 
 When creating skills or configs, use short aliases: `haiku`, `sonnet`, `opus` (not full model IDs).
@@ -19,6 +28,15 @@ When creating skills or configs, use short aliases: `haiku`, `sonnet`, `opus` (n
 
 - Use Context7 (`mcp__context7__*`) for library/framework docs before WebSearch
 - Use WebSearch for general queries, news, tutorials
+
+## Local preview & browser
+
+- **Don't auto-open browser windows/tabs** to show changes. Verify headlessly (curl, build,
+  logs) and just tell me to refresh my existing tab. Only launch a browser when I explicitly
+  ask for it.
+- **Never use cache-busting query params** (e.g. `?v=2`) to force a reload — each unique URL
+  spawns a new tab. If a hard refresh is genuinely needed, just say so (Cmd-Shift-R).
+- My default browser is **Zen**. Keep one pinned `localhost` tab; I'll refresh it.
 
 ## Testing — non-negotiable, every project
 
