@@ -27,55 +27,79 @@ REPO_ROOT=$(git rev-parse --show-toplevel) && BASE_PATH=$(dirname "$REPO_ROOT") 
 ```
 
 ## Step 1: Gather Info in Parallel
-Run these FOUR bash commands IN PARALLEL (single message, multiple tool calls):
+Run these bash commands IN PARALLEL (single message, multiple tool calls):
 ```bash
 # Command 1: List existing worktrees
 git worktree list
 ```
 ```bash
-# Command 2: List open issues
-gh issue list --state open --limit 10
+# Command 2: List open issues (high limit so NONE are dropped)
+gh issue list --state open --limit 100
 ```
 ```bash
 # Command 3: Fetch and list remote branches
 git fetch origin --prune && git branch -r
 ```
 ```bash
-# Command 4: List merged PRs (for cleanup)
-gh pr list --state merged --base main --json headRefName --limit 50
+# Command 4: List merged PRs (for cleanup detection)
+gh pr list --state merged --base main --json headRefName --limit 100
+```
+```bash
+# Command 5: List CLOSED issues (for cleanup detection — closed-but-not-merged counts as stale)
+gh issue list --state closed --limit 100 --json number,title
 ```
 
-## Step 2: Auto-cleanup Stale Worktrees
-Compare worktree list against merged PRs. For each worktree whose branch was merged:
+## Step 2: Propose Stale Worktree Cleanup
+A worktree is **stale** if EITHER condition holds (match by issue number in the branch/folder name, e.g. `feature-23-*` ⇒ issue #23):
+- its branch appears in the merged-PR list (Command 4), OR
+- its issue number appears in the closed-issues list (Command 5).
+
+**Never** treat the current worktree or the `main` worktree as stale.
+
+**If there are stale worktrees, you MUST propose them for removal via the `AskUserQuestion` tool** — do NOT auto-delete and do NOT use plain text. One option per stale worktree (label `#<number> — <folder>`, description = why it's stale: "PR merged" or "issue closed"), `multiSelect: true`.
+
+> **Pagination (same as Step 3):** each question caps at 4 options, but a single call accepts up to 4 questions. For >4 stale worktrees, paginate across `ceil(N/4)` questions (headers `Stale 1/2`, …) in one call; for >16, repeat calls. Never fall back to plain text.
+
+For each worktree the user chose to remove:
 ```bash
 git worktree remove "$BASE_PATH/<worktree-folder>"
 ```
-**Important:** If removal fails (uncommitted changes), warn and skip that worktree.
+**Important:** If removal fails (uncommitted changes / dirty worktree), warn and skip that worktree — never force-remove.
 
-Report what was cleaned up to the user.
+Report what was removed and what was skipped.
 
 ## Step 3: Ask Which Issue(s)
 **Filter issues first:** Compare the worktree list from Step 1 against open issues. Exclude any issue that already has a worktree (match by issue number in branch/folder name, e.g., `feature-23-*` means issue #23 has a worktree).
 
 **If ALL issues already have worktrees:** Skip to Step 6 and show the existing worktrees summary.
 
-**You MUST use the `AskUserQuestion` tool** (not plain text) with a single question, `multiSelect: true`, and up to 4 options — one per issue that doesn't already have a worktree. Format each option label as `#<number> — <title>` with a short description. Example:
+**You MUST ALWAYS use the `AskUserQuestion` tool** to collect the selection — never plain text. Every candidate issue must appear as a selectable option.
 
+`AskUserQuestion` caps each **question** at 4 options, but accepts up to **4 questions** in a single call. Use that to fit every candidate (up to 16) into one interview by **paginating**:
+
+- **≤4 candidates** → one question, one option per issue, `multiSelect: true`.
+- **5–16 candidates** → split into `ceil(N/4)` questions in a SINGLE `AskUserQuestion` call. Header each `Issues 1/2`, `Issues 2/2`, etc.; every question `multiSelect: true`. Merge the selections from all questions into one set.
+  - **Each question needs 2–4 options** (the tool rejects a 1-option question). Rebalance chunks so none has fewer than 2 — e.g. 5 issues → **3 + 2**, not 4 + 1; 9 issues → 3 + 3 + 3, not 4 + 4 + 1.
+- **>16 candidates** (rare) → make repeated `AskUserQuestion` calls of 4 questions each until all issues have been offered, then merge.
+
+Label each option `#<number> — <title>` with a short description. Example for 5 candidates (rebalanced 3 + 2):
 ```
 AskUserQuestion({
-  questions: [{
-    question: "Which issue(s) do you want to create worktrees for?",
-    header: "Issues",
-    options: [
-      { label: "#23 — PostHog & Sentry", description: "Analytics and crash reporting" },
-      { label: "#14 — KV caching", description: "Cloudflare KV image cache" }
-    ],
-    multiSelect: true
-  }]
+  questions: [
+    { question: "Which issue(s)? (1/2)", header: "Issues 1/2", multiSelect: true, options: [
+      { label: "#1 — Weekly Meal Planner", description: "Full feature, P1" },
+      { label: "#2 — Authentication", description: "Anonymous-first, P1" },
+      { label: "#4 — Testing foundation", description: "testID convention, P2" }
+    ]},
+    { question: "Which issue(s)? (2/2)", header: "Issues 2/2", multiSelect: true, options: [
+      { label: "#5 — Onboarding pager test", description: "Maestro matching bug, P2" },
+      { label: "#7 — Localization pipeline", description: "DeepL → Claude review" }
+    ]}
+  ]
 })
 ```
 
-Wait for the user's selection before proceeding. Do NOT create worktrees without explicit selection.
+Wait for the user's explicit selection before proceeding. Do NOT create worktrees without it.
 
 ## Step 4: Create Worktrees
 **Naming:** Branch name uses slashes: `feature/<number>-<desc>`. Folder name uses dashes: `feature-<number>-<desc>` (sibling to main/).
@@ -119,7 +143,7 @@ Show a summary table of newly created worktrees:
 
 Also report:
 - Existing worktrees that were skipped (listed for reference)
-- Any worktrees that were cleaned up (from Step 2)
+- Any stale worktrees removed in Step 2 (and any skipped because they were dirty)
 - Any rebase conflicts (if rebase failed, warn user to resolve manually)
 - Any errors encountered
 
@@ -127,5 +151,7 @@ Also report:
 - **Branch exists but no worktree:** Create worktree for existing remote branch, rebase onto origin/main
 - **No branch exists:** Create new branch + worktree from origin/main (already up to date)
 - **All issues have worktrees:** Skip to summary, show existing worktrees
+- **More than 4 candidate issues (or >4 stale worktrees):** `AskUserQuestion` caps each question at 4 options but takes up to 4 questions per call — paginate across multiple questions (`ceil(N/4)`) so every item is a selectable option. ALWAYS use the interview tool; never fall back to plain text. Never let the option cap hide an item.
+- **Stale worktree (issue closed or PR merged):** Propose for removal via Step 2 — never auto-delete.
 - **Rebase conflicts:** Abort rebase (`git rebase --abort`), warn user to resolve manually
 - **Dirty worktree on cleanup:** Warn and skip (don't force remove)
