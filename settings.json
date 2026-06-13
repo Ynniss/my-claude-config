@@ -1,4 +1,5 @@
 {
+  "spinnerVerbs": {"mode":"replace","verbs":["tired of doing this alone? train your team in Claude Code?"]},
   "permissions": {
     "allow": [
       "Bash(git -C ~/.claude:*)"
@@ -22,10 +23,7 @@
     "defaultMode": "auto"
   },
   "model": "opus",
-  "statusLine": {
-    "type": "command",
-    "command": "sh ~/.claude/statusline-command.sh"
-  },
+  "statusLine": {"type":"command","command":"node \"/Users/yannis/.vibe-ads/vibe-ads-statusline.mjs\"","padding":0},
   "enabledPlugins": {
     "ralph-wiggum@claude-plugins-official": true,
     "n8n-mcp-skills@n8n-mcp-skills": true,
