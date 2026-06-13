@@ -1,5 +1,5 @@
 {
-  "spinnerVerbs": {"mode":"replace","verbs":["tired of doing this alone? train your team in Claude Code?"]},
+  "spinnerVerbs": {"mode":"replace","verbs":["Tell your agent: \"publish this to here.now\" for free hosting"]},
   "permissions": {
     "allow": [
       "Bash(git -C ~/.claude:*)"
