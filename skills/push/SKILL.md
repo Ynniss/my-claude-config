@@ -65,6 +65,13 @@ git branch --show-current | grep -oE '[0-9]+' | head -1
 ## Step 3: Propose Commit Strategy
 Split changes into **lean, atomic commits** - each commit should do ONE thing.
 
+**Scope = everything by default.** Commit and push ALL changed files. Do NOT single out
+incidental churn (e.g. a rotated spinner verb, a bumped timestamp, formatting) and ask whether
+to skip it — just include it. The ONLY reason to hold back or flag a change is that it's
+genuinely **unsuitable to publish**: secrets, API keys, tokens, credentials, private absolute
+paths, or other sensitive data — especially when pushing to a public repo. When you spot
+something like that, stop and flag it specifically; otherwise include everything without asking.
+
 Guidelines:
 - Each commit must be focused and self-contained
 - Split by logical unit, not by file type
