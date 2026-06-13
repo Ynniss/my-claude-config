@@ -54,19 +54,28 @@ For each, check: `gh pr list --head "<branch>" --state merged --json number --jq
 
 Exclude branches that have an active worktree.
 
-## Step 5: Confirm & Clean
+## Step 5: Select & Clean
 
-Show a single table of everything to clean:
+Show a single table of everything that's cleanable:
 
 | Type | Branch | PR# | Title |
 |------|--------|-----|-------|
 
 Types: `worktree` (will remove worktree + branch), `branch` (local branch only)
 
-If any found, use AskUserQuestion once:
-- "Clean up N items?" → "Yes, clean all" / "No, skip"
+**If any found, you MUST use `AskUserQuestion` with `multiSelect: true` to let the user pick
+which items to clean — never a Yes/No confirmation, and never plain text.** One option per
+cleanable item: label `<type>: <branch>`, description = why it's stale (e.g. "PR #11 merged"
+or "merged into origin/main"). The user selects exactly the items they want removed; clean
+only those, leave the rest.
 
-If confirmed:
+> **Pagination:** `AskUserQuestion` caps each question at 4 options but accepts up to 4
+> questions per call. For >4 items, paginate across `ceil(N/4)` questions (headers
+> `Cleanup 1/2`, …) in one call, each `multiSelect: true`; rebalance so no question has
+> fewer than 2 options (5 items → 3 + 2, not 4 + 1). For >16, repeat calls. Merge all
+> selections into one set. Never let the option cap hide an item; never fall back to plain text.
+
+For each item the user selected:
 - Worktrees: `git worktree remove "<path>" && git branch -d "<branch>"`
 - Branches: `git branch -d "<branch>"` (use `-D` if `-d` fails and PR is confirmed merged)
 
