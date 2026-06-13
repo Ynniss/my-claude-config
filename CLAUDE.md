@@ -37,6 +37,18 @@ When creating skills or configs, use short aliases: `haiku`, `sonnet`, `opus` (n
 - **Never use cache-busting query params** (e.g. `?v=2`) to force a reload — each unique URL
   spawns a new tab. If a hard refresh is genuinely needed, just say so (Cmd-Shift-R).
 - My default browser is **Zen**. Keep one pinned `localhost` tab; I'll refresh it.
+- **Disposable HTML design previews / explorations / mockups go on the Desktop, never in the
+  repo** — write them to `~/Desktop/previews/<project>/<feature>/` (one shared `previews`
+  folder, per-project then per-feature subfolders; `<project>` = the product/repo name). This
+  keeps repos product-only and the previews durable across worktrees/cleanups. Hand-author them
+  against the project's real design tokens (don't use external design-gen tools); open via
+  `file://`.
+  - **Keep it organised**, never a dumping ground: each `<feature>/` gets its own
+    `assets/<feature>.css` (shared tokens/components, referenced relatively), an `index.html`
+    gallery, and subfolders grouping related studies (e.g. `hub/` for a screen's layouts,
+    `explorations/` for one-off surface/component studies). Add a project-level `index.html`
+    linking features and a short `README.md` documenting the structure. No loose `*.html` at a
+    folder root.
 
 ## Testing — non-negotiable, every project
 
