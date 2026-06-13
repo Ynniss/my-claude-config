@@ -1,6 +1,6 @@
 ---
 name: checkout
-description: Open worktrees for one or more issues
+description: Open and fully initialize (install dependencies) worktrees for one or more issues
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(rm:*), Bash, Read, AskUserQuestion
 model: haiku
 ---
@@ -125,23 +125,46 @@ Wait for the user's explicit selection before proceeding. Do NOT create worktree
 
 **Tip:** Run worktree creation commands in parallel when creating multiple new worktrees. Run rebase commands after all worktrees are created.
 
-## Step 5: Setup (only for new worktrees)
-For each NEW worktree created (not existing ones):
-1. Read the project's `CLAUDE.md` file in the new worktree
-2. Look for a `## Worktree Setup` section
-3. Run the setup commands for each new worktree (can run in parallel)
+## Step 5: Initialize each NEW worktree
+A new worktree shares git history with the hub but has its **own working directory with NO
+`node_modules`** (dependencies are git-ignored and per-worktree), so it can't build,
+type-check, or run until it's initialized. Fully initialize every NEW worktree — skip
+worktrees that already existed.
 
-**Skip this step** for worktrees that already existed or if no setup section exists.
+### 5a. Install dependencies (the default — always do this)
+Detect the package manager from the lockfile **in the worktree** and install. Use the
+manager's directory flag (NOT `cd`, which can trip permission prompts). Run these in
+parallel across new worktrees:
+- `bun.lockb` → `bun install --cwd "$BASE_PATH/<folder>"`
+- `pnpm-lock.yaml` → `pnpm -C "$BASE_PATH/<folder>" install`
+- `yarn.lock` → `yarn --cwd "$BASE_PATH/<folder>" install`
+- `package-lock.json` present, or only `package.json` → `npm install --prefix "$BASE_PATH/<folder>"`
+- No `package.json` → not a Node project; skip install and rely on 5b.
+
+**Wait for installs to finish** before calling a worktree ready. If an install fails (e.g.
+no network, registry auth), report it plainly and mark that worktree **"created · install
+FAILED"** in the summary — never pretend it's ready.
+
+### 5b. Run project-specific setup
+Read the project's `CLAUDE.md` in the new worktree; if it has a `## Worktree Setup`
+section, run those commands **after** the install. They cover anything beyond a plain
+install (copying `.env`, codegen, `expo prebuild`, DB seed, etc.). Skip if absent.
+
+### 5c. Native builds — note, don't run
+If the project is Expo / React Native (or otherwise has native modules), a dev-client
+rebuild (`expo run:*` / EAS) is a device-side step, NOT part of worktree init. Don't
+attempt it — just mention it in the summary if the project clearly needs one.
 
 ## Step 6: Confirm
 Show a summary table of newly created worktrees:
 
 | Issue | Branch | Path | Status |
 |-------|--------|------|--------|
-| #21 | feature/21-i18n | /path/to/feature-21-i18n | Created (setup complete) |
-| #16 | feature/16-cicd | /path/to/feature-16-cicd | Created (rebased, setup complete) |
+| #21 | feature/21-i18n | /path/to/feature-21-i18n | Created · deps installed |
+| #16 | feature/16-cicd | /path/to/feature-16-cicd | Created · rebased · deps installed |
 
 Also report:
+- Any worktree where dependency install FAILED (created but not ready — tell the user how to finish it)
 - Existing worktrees that were skipped (listed for reference)
 - Any stale worktrees removed in Step 2 (and any skipped because they were dirty)
 - Any rebase conflicts (if rebase failed, warn user to resolve manually)
