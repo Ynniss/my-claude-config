@@ -1,12 +1,36 @@
 ---
 name: push
-description: Split into atomic commits, push, and create PR
+description: Split into atomic commits, push, and create PR (optionally against a target repo path)
 allowed-tools: Bash(gh:*), Bash(git:*), Bash(rm:*), Bash(pwd:*), Bash(rmdir:*), AskUserQuestion
 model: sonnet
 effort: low
 ---
 
 # Finish Work and Create PR
+
+## Step 0: Resolve Target Repo
+This skill operates on **one** repo. By default that's the current session's repo (cwd), but
+the user can point it at any repo out of session scope by passing a path argument.
+
+**Parse the invocation argument** (everything after `/push`):
+- **A path** — `~/.claude`, `--repo <path>`, `--repo=<path>`, or a bare absolute/relative path
+  (e.g. `/push ~/.claude`, `/push the .claude config dir`). Resolve `~` and relative paths to
+  an absolute path → `$REPO`.
+- **No path** (e.g. `/push`, or only a PR title/notes) → `$REPO` = current working directory.
+
+Then resolve and verify, and compute the GitHub slug for `gh`:
+```bash
+REPO="$(cd "<parsed-path-or-.>" 2>/dev/null && git rev-parse --show-toplevel)" || { echo "Not a git repo: <parsed-path>"; exit 1; }
+SLUG="$(git -C "$REPO" remote get-url origin 2>/dev/null | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')"
+echo "REPO=$REPO" && echo "SLUG=${SLUG:-<no origin remote>}"
+```
+
+**Convention for every command below (Steps 1–8):**
+- Run **all `git` commands** with `git -C "$REPO" …` (the snippets below omit `-C "$REPO"` for
+  brevity — always add it).
+- Run **all `gh` commands** with `gh … -R "$SLUG"` when `$SLUG` is set. If there's no origin
+  remote, a local-only repo can still commit; skip PR creation (Step 6) and say so.
+- Never `cd` into `$REPO` (it can trip permission prompts) — use the flags above.
 
 ## Git Conventions (GitHub Flow)
 - **PRs always target `main`** - no long-lived feature branches
@@ -20,12 +44,13 @@ effort: low
 
 ## Step 1: Review Changes & Check for Existing PR
 ```bash
-git status
-git diff --stat
-git branch --show-current
-gh pr list --head $(git branch --show-current) --json number,url --jq '.[0]'
+git -C "$REPO" status
+git -C "$REPO" diff --stat
+git -C "$REPO" branch --show-current
+gh pr list --head "$(git -C "$REPO" branch --show-current)" --json number,url --jq '.[0]' -R "$SLUG"
 ```
-Show summary of changes.
+Show summary of changes. (This is the convention from Step 0 made explicit — apply the same
+`-C "$REPO"` / `-R "$SLUG"` treatment to every git/gh command in the remaining steps.)
 
 **If on `main`:** Skip Steps 2, 5, 6 PR creation, and 7. Just commit (Steps 3-4), push to main, and done.
 
