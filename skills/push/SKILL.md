@@ -1,7 +1,7 @@
 ---
 name: push
 description: Split into atomic commits, push, and create PR (optionally against a target repo path)
-allowed-tools: Bash(gh:*), Bash(git:*), Bash(rm:*), Bash(pwd:*), Bash(rmdir:*), AskUserQuestion
+allowed-tools: Bash(gh:*), Bash(git:*), Bash(rm:*), Bash(pwd:*), Bash(rmdir:*), Bash(dotnet:*), Bash(mise:*), Bash(npm:*), Bash(npx:*), AskUserQuestion
 model: sonnet
 effort: low
 ---
@@ -55,6 +55,23 @@ Show summary of changes. (This is the convention from Step 0 made explicit — a
 **If on `main`:** Skip Steps 2, 5, 6 PR creation, and 7. Just commit (Steps 3-4), push to main, and done.
 
 **If on a feature branch and a PR already exists:** Note that we'll just commit and push (skip PR creation).
+
+## Step 1.5: Run Quality Gates (replaces CI)
+These build/test/lint/format checks used to run in GitHub Actions; the user prefers them run **here,
+at push time**. Run them on the working tree **before committing** so a failure blocks the push early
+without leaving commits to amend.
+
+1. From `git -C "$REPO" status`, determine which stack(s)/folder(s) the changed files touch.
+2. For each affected stack, run its gate **exactly as the repo documents it** — the repo's CLAUDE.md
+   "Gate" table is authoritative, and per-stack commands run from **that stack's own folder**. Use the
+   repo's pinned toolchain (e.g. prefix `mise exec --` when the shim isn't active). Typical shape:
+   - **.NET** → `dotnet build <sln> -warnaserror` · `dotnet test <sln>` · `dotnet format <sln> --verify-no-changes`
+   - **Node / Expo** → `npm run lint` · `npx tsc --noEmit` · `npm run format:check`
+3. **If any gate fails: STOP.** Report exactly what failed (paste the relevant output); do **not** commit
+   or push. Let the user fix it, then re-invoke `/push`.
+4. **If the repo documents no gates** (e.g. a plain config repo like `~/.claude`), skip this step.
+
+Proceed only once every affected stack's gates pass.
 
 ## Step 2: Extract Issue Number (feature branches only)
 Get issue number from branch name (format: `<type>/<issue-number>-<slug>`):
