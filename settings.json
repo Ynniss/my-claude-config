@@ -1,5 +1,4 @@
 {
-  "spinnerVerbs": {"mode":"replace","verbs":["NONE OF THIS IS REAL!!!"]},
   "permissions": {
     "allow": [
       "Bash(git -C ~/.claude:*)"
@@ -22,8 +21,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus",
-  "statusLine": {"type":"command","command":"node \"/Users/yannis/.vibe-ads/vibe-ads-statusline.mjs\"","padding":0},
+  "statusLine": {"type":"command","command":"sh ~/.claude/statusline-command.sh"},
   "enabledPlugins": {
     "ralph-wiggum@claude-plugins-official": true,
     "n8n-mcp-skills@n8n-mcp-skills": true,
