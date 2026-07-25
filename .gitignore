@@ -6,7 +6,20 @@
 !README.md
 !CLAUDE.md
 !settings.json
+!statusline-command.sh
 !commands/
 !commands/**
 !skills/
 !skills/**
+
+# Skills symlinked in from ~/.agents/skills — the links are machine-local
+skills/app-store-screenshots
+skills/aso
+skills/aso-appstore-screenshots
+skills/find-skills
+skills/react-native-best-practices
+skills/revenuecat-paywall
+skills/revenuecat-purchase-flow
+skills/revenuecat-testing-setup
+skills/revenuecat-troubleshoot
+skills/sleek-design-mobile-apps
