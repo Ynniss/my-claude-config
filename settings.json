@@ -21,7 +21,10 @@
     ],
     "defaultMode": "auto"
   },
-  "statusLine": {"type":"command","command":"sh ~/.claude/statusline-command.sh"},
+  "statusLine": {
+    "type": "command",
+    "command": "sh ~/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
     "ralph-wiggum@claude-plugins-official": true,
     "n8n-mcp-skills@n8n-mcp-skills": true,
@@ -39,5 +42,6 @@
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
-  "autoCompactEnabled": false
+  "autoCompactEnabled": false,
+  "model": "sonnet"
 }
