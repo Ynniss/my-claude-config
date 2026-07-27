@@ -39,7 +39,32 @@ branch=$(git -C "$cwd" --no-optional-locks branch --show-current 2>/dev/null)
 line1="$model · $location"
 [ -n "$branch" ] && line1="$line1 · $branch"
 
-session="session ${lim5}%"
+# Threshold-colored, bold percentage: green (<50%), amber (50-79%), red (>=80%).
+esc=$(printf '\033')
+reset="${esc}[0m"
+pct_color() {
+  if [ "$1" -ge 80 ]; then printf '%s[1;31m' "$esc"   # red
+  elif [ "$1" -ge 50 ]; then printf '%s[1;33m' "$esc" # amber
+  else printf '%s[1;32m' "$esc"                       # green
+  fi
+}
+
+# Context-only thresholds: green (<35%), amber (35-49%), red (>=50%).
+# Tuned for "context rot" (quality decays well before the hard limit), not the
+# wall itself — autoCompactEnabled is false, so this is the only nudge to compact.
+# User prefers to compact as early as 50%.
+ctx_color() {
+  if [ "$1" -ge 50 ]; then printf '%s[1;31m' "$esc"   # red
+  elif [ "$1" -ge 35 ]; then printf '%s[1;33m' "$esc" # amber
+  else printf '%s[1;32m' "$esc"                       # green
+  fi
+}
+
+ctx_colored="$(ctx_color "$ctx")${ctx}%${reset}"
+lim5_colored="$(pct_color "$lim5")${lim5}%${reset}"
+lim7_colored="$(pct_color "$lim7")${lim7}%${reset}"
+
+session="session ${lim5_colored}"
 
 # Countdown to the 5-hour window reset.
 left=$((reset5 - $(date +%s)))
@@ -52,6 +77,6 @@ if [ "$left" -gt 0 ]; then
   session="$session ($span left)"
 fi
 
-line2="context ${ctx}%  ·  $session  ·  week ${lim7}%"
+line2="context ${ctx_colored}  ·  $session  ·  week ${lim7_colored}"
 
 printf '%s\n%s' "$line1" "$line2"
