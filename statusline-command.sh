@@ -1,7 +1,7 @@
 #!/bin/sh
 input=$(cat)
 
-IFS='|' read -r model cwd repo ctx lim5 reset5 lim7 <<EOF
+IFS='|' read -r model cwd repo ctx lim5 reset5 lim7 reset7 <<EOF
 $(printf '%s' "$input" | jq -r '[
   (.model.display_name // ""),
   (.workspace.current_dir // .cwd // ""),
@@ -9,7 +9,8 @@ $(printf '%s' "$input" | jq -r '[
   (.context_window.used_percentage // 0 | floor),
   (.rate_limits.five_hour.used_percentage // 0 | floor),
   (.rate_limits.five_hour.resets_at // 0 | floor),
-  (.rate_limits.seven_day.used_percentage // 0 | floor)
+  (.rate_limits.seven_day.used_percentage // 0 | floor),
+  (.rate_limits.seven_day.resets_at // 0 | floor)
 ] | map(tostring) | join("|")')
 EOF
 
@@ -77,6 +78,20 @@ if [ "$left" -gt 0 ]; then
   session="$session ($span left)"
 fi
 
-line2="context ${ctx_colored}  ·  $session  ·  week ${lim7_colored}"
+week="week ${lim7_colored}"
+
+# Countdown to the 7-day window reset.
+left7=$((reset7 - $(date +%s)))
+if [ "$left7" -gt 0 ]; then
+  d=$((left7 / 86400)); h7=$(((left7 % 86400) / 3600)); m7=$(((left7 % 3600) / 60))
+  if [ "$d" -gt 0 ]; then span7="${d}d${h7}h"
+  elif [ "$h7" -gt 0 ]; then span7="${h7}h${m7}m"
+  elif [ "$m7" -gt 0 ]; then span7="${m7}m"
+  else span7="<1m"
+  fi
+  week="$week ($span7 left)"
+fi
+
+line2="context ${ctx_colored}  ·  $session  ·  $week"
 
 printf '%s\n%s' "$line1" "$line2"
