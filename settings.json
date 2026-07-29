@@ -48,6 +48,5 @@
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
-  "autoCompactEnabled": false,
-  "model": "sonnet"
+  "autoCompactEnabled": false
 }
