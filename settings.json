@@ -32,7 +32,9 @@
   "enabledPlugins": {
     "ralph-wiggum@claude-plugins-official": true,
     "n8n-mcp-skills@n8n-mcp-skills": true,
-    "warp@claude-code-warp": true
+    "warp@claude-code-warp": true,
+    "claude-security@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "claude-code-warp": {
