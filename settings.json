@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C ~/.claude:*)"
+      "Bash(git -C ~/.claude:*)",
+      "Bash(npx *)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [
       "Bash(rm -rf /:*)",
