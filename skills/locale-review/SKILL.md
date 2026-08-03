@@ -23,7 +23,8 @@ with Claude as the engine (no API key, no writes).
    - **Fidelity** — meaning drift, omissions, additions vs the English source.
    - **Naturalness** — literal/machine-translation smell; must read as written by a native, not translated.
    - **Tone** — warm, reassuring, adult; NEVER babyish (audience = tired parents, not children).
-     Exception: `onboarding.*` keys use the playful Dr. Zayd mascot voice.
+     Exception: a project may give one namespace (e.g. `onboarding.*`) a playful mascot
+     voice — follow the project's own tone guidance wherever it defines one.
    - **Register** — correct formality for the locale (e.g. fr `vous` vs `tu` — must be consistent
      app-wide; informal-warm is the target unless the locale's convention says otherwise).
    - **Terminology consistency** — the same concept (e.g. allergen, purée, meal plan, premium)
